@@ -1,59 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Dental Coach Pro</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-    <script src="./edge-impulse-standalone.js"></script>
-    <style>
-        body { font-family: sans-serif; background: #000; color: white; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        #webcam { width: 90%; max-width: 400px; border-radius: 20px; border: 4px solid #333; transform: scaleX(-1); }
-        #status { width: 100%; padding: 20px; font-size: 26px; font-weight: bold; text-align: center; background: #222; margin-bottom: 10px; }
-        .incorrect { background: #ff3b30 !important; animation: shake 0.2s infinite; }
-        @keyframes shake { 0% { transform: translateX(0); } 50% { transform: translateX(5px); } 100% { transform: translateX(0); } }
-        #start-btn { padding: 15px 40px; font-size: 20px; border-radius: 50px; border: none; background: #007bff; color: white; font-weight: bold; cursor: pointer; }
-    </style>
-</head>
-<body>
-    <div id="status">READY FOR PATIENT</div>
-    <video id="webcam" playsinline autoplay muted></video>
-    <br><button id="start-btn" onclick="runCoach()">▶ START SESSION</button>
-
-    <script>
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function alarm() {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sawtooth'; // Harsh buzzer sound
-            osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start();
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-            osc.stop(audioCtx.currentTime + 0.5);
-        }
-
-        async function runCoach() {
-            document.getElementById('start-btn').style.display = 'none';
-            const status = document.getElementById('status');
-            status.innerText = "INITIALIZING...";
-            try {
-                const classifier = new EdgeImpulseClassifier();
-                await classifier.init();
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-                document.getElementById('webcam').srcObject = stream;
-                status.innerText = "WATCHING...";
-
-                setInterval(async () => {
-                    const res = await classifier.classify(document.getElementById('webcam'));
-                    const top = res.results.reduce((a, b) => a.value > b.value ? a : b);
-                    status.innerText = top.label.toUpperCase();
-                    if(top.label.toLowerCase().includes("incorrect")) {
-                        status.className = "incorrect";
-                        alarm();
-                    } else { status.className = ""; }
-                }, 400);
-            } catch (e) { status.innerText = "CAMERA BLOCKED - RELOAD"; }
-        }
-    </script>
-</body>
-</html>
+async function initApp() {
+    document.getElementById('startBtn').style.display = 'none';
+    const statusDiv = document.getElementById('status');
+    statusDiv.innerText = "🧠 WAKING UP AI...";
+    
+    try {
+        // Force the browser to wait for the camera
+        const constraints = { video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } } };
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        
+        document.getElementById('webcam').srcObject = stream;
+        
+        const classifier = new EdgeImpulseClassifier();
+        await classifier.init();
+        
+        statusDiv.innerText = "✅ WATCHING...";
+        // ... (rest of the code remains the same)
+    } catch (e) {
+        statusDiv.innerText = "🚫 ACCESS DENIED";
+        alert("Please tap the 'Lock' icon at the top and set Camera to 'ALLOW'.");
+    }
+}
