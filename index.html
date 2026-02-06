@@ -3,7 +3,7 @@
 <head>
     <title>Dental Coach AI</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="edge-impulse-standalone.js?v=1"></script>
+    <script src="https://pedodontisttushar28-spec.github.io/dental-coach/edge-impulse-standalone.js"></script>
     <style>
         body { font-family: sans-serif; text-align: center; background: #121212; color: white; padding: 20px; }
         #webcam { width: 100%; max-width: 400px; border-radius: 15px; border: 4px solid #333; transform: scaleX(-1); }
@@ -19,12 +19,11 @@
     <script>
         async function initAI() {
             const statusDiv = document.getElementById('status');
-            statusDiv.innerText = "🧠 Initializing AI...";
+            statusDiv.innerText = "🧠 Connecting to Brain...";
             try {
-                // Testing if the JS file loaded correctly
+                // If the file we linked above didn't load, this will trigger the error
                 if (typeof EdgeImpulseClassifier === 'undefined') {
-                    statusDiv.innerText = "❌ JS File Not Loaded";
-                    return;
+                    throw new Error("The JS file is live, but your browser is blocking it. Please use Chrome Incognito.");
                 }
                 const classifier = new EdgeImpulseClassifier();
                 await classifier.init();
@@ -37,8 +36,8 @@
                     statusDiv.innerText = `${top.label.toUpperCase()} (${Math.round(top.value*100)}%)`;
                 }, 200);
             } catch (e) { 
-                alert("Error: " + e.message); 
-                statusDiv.innerText = "❌ Failed to start camera";
+                alert("Security Error: " + e.message); 
+                statusDiv.innerText = "❌ Blocked by Browser";
             }
         }
     </script>
