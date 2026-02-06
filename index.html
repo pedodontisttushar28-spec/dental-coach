@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dental Coach AI</title>
+    <title>Dental AI Coach</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="edge-impulse-standalone.js"></script>
+    <script src="./edge-impulse-standalone.js"></script>
     <style>
         body { font-family: sans-serif; text-align: center; background: #121212; color: white; padding: 20px; }
         #webcam { width: 100%; max-width: 400px; border-radius: 15px; border: 4px solid #333; transform: scaleX(-1); }
@@ -12,18 +12,20 @@
     </style>
 </head>
 <body>
-    <h1>🦷 Dental Coach</h1>
+    <h1>🦷 Dental Coach AI</h1>
     <video id="webcam" playsinline autoplay muted></video>
     <div id="status">Ready to Start</div>
     <br><button onclick="initAI()">▶ START BRUSHING</button>
     <script>
-        let classifier;
         async function initAI() {
             const statusDiv = document.getElementById('status');
-            statusDiv.innerText = "🧠 Loading AI...";
+            statusDiv.innerText = "🧠 Initializing AI...";
             try {
-                // This creates the classifier from your .js file
-                classifier = new EdgeImpulseClassifier();
+                // We check if the file loaded first
+                if (typeof EdgeImpulseClassifier === 'undefined') {
+                    throw new Error("The Brain file (JS) is not loading. Check filenames!");
+                }
+                const classifier = new EdgeImpulseClassifier();
                 await classifier.init();
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                 document.getElementById('webcam').srcObject = stream;
@@ -33,8 +35,12 @@
                     const top = res.results.reduce((a, b) => a.value > b.value ? a : b);
                     statusDiv.innerText = `${top.label.toUpperCase()} (${Math.round(top.value*100)}%)`;
                 }, 200);
-            } catch (e) { alert("Error: " + e.message); }
+            } catch (e) { 
+                alert("CRITICAL ERROR: " + e.message); 
+                statusDiv.innerText = "❌ Failed to load";
+            }
         }
     </script>
 </body>
 </html>
+
