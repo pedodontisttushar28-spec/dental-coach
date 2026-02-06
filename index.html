@@ -1,44 +1,62 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dental Coach AI</title>
+    <title>Dental Coach with Buzzer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://cdn.jsdelivr.net/gh/pedodontisttushar28-spec/dental-coach@main/edge-impulse-standalone.js
+    <script src="https://cdn.jsdelivr.net/gh/edgeimpulse/browser-sdk/dist/edge-impulse-standalone.js"></script>
+    <style>
         body { font-family: sans-serif; text-align: center; background: #121212; color: white; padding: 20px; }
         #webcam { width: 100%; max-width: 400px; border-radius: 15px; border: 4px solid #333; transform: scaleX(-1); }
         #status { margin-top: 20px; padding: 20px; border-radius: 15px; font-size: 24px; font-weight: bold; background: #222; }
-        button { background: #007bff; color: white; border: none; padding: 15px 40px; border-radius: 50px; font-size: 18px; margin-top: 20px; font-weight: bold; }
+        .incorrect { background: #dc3545 !important; animation: shake 0.2s; }
+        @keyframes shake { 0% { margin-left: 0rem; } 25% { margin-left: 0.5rem; } 75% { margin-left: -0.5rem; } 100% { margin-left: 0rem; } }
+        button { background: #007bff; color: white; border: none; padding: 15px 40px; border-radius: 50px; font-size: 18px; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <h1>🦷 Dental Coach AI</h1>
+    <h1>🦷 Dental Coach</h1>
     <video id="webcam" playsinline autoplay muted></video>
-    <div id="status">Ready to Start</div>
+    <div id="status">Tap Start</div>
     <br><button onclick="initAI()">▶ START BRUSHING</button>
+
     <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playBuzzer() {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = "square"; // Harsh buzzer sound
+            osc.frequency.setValueAtTime(400, audioCtx.currentTime); 
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+            osc.stop(audioCtx.currentTime + 0.5);
+        }
+
         async function initAI() {
             const statusDiv = document.getElementById('status');
-            statusDiv.innerText = "🧠 Connecting to Brain...";
+            statusDiv.innerText = "🧠 Loading...";
             try {
-                // If the file we linked above didn't load, this will trigger the error
-                if (typeof EdgeImpulseClassifier === 'undefined') {
-                    throw new Error("The JS file is live, but your browser is blocking it. Please use Chrome Incognito.");
-                }
                 const classifier = new EdgeImpulseClassifier();
                 await classifier.init();
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                 document.getElementById('webcam').srcObject = stream;
-                statusDiv.innerText = "✅ AI Active!";
+                statusDiv.innerText = "✅ ACTIVE";
+                
                 setInterval(async () => {
                     const res = await classifier.classify(document.getElementById('webcam'));
                     const top = res.results.reduce((a, b) => a.value > b.value ? a : b);
-                    statusDiv.innerText = `${top.label.toUpperCase()} (${Math.round(top.value*100)}%)`;
-                }, 200);
-            } catch (e) { 
-                alert("Security Error: " + e.message); 
-                statusDiv.innerText = "❌ Blocked by Browser";
-            }
+                    statusDiv.innerText = top.label.toUpperCase();
+                    
+                    if(top.label.toLowerCase().includes("incorrect")) {
+                        statusDiv.className = "incorrect";
+                        playBuzzer(); // TRIGER THE BUZZER
+                    } else {
+                        statusDiv.className = "";
+                    }
+                }, 400);
+            } catch (e) { alert("Security Error: Try Chrome Incognito"); }
         }
     </script>
 </body>
-</html>
+</html>            
