@@ -4,55 +4,11 @@
     <title>Dental Coach AI</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="edge-impulse-standalone.js"></script>
-    <script src="edge-impulse-standalone.js"></script><script src="edge-impulse-standalone.js"></script>
-        body { font-family: sans-serif; text-align: center; background: #121212; color: white; padding: 20px; }
-        #webcam { width: 100%; max-width: 400px; border-radius: 15px; border: 4px solid #333; transform: scaleX(-1); }
-        #status { margin-top: 20px; padding: 20px; border-radius: 15px; font-size: 24px; font-weight: bold; background: #222; }
-        button { background: #007bff; color: white; border: none; padding: 15px 40px; border-radius: 50px; font-size: 18px; margin-top: 20px; font-weight: bold; }
-        .brushing { background: #28a745 !important; }
-        .idle { background: #dc3545 !important; }
-    </style>
-</head>
-<body>
-    <h1>🦷 Dental Coach</h1>
-    <video id="webcam" playsinline autoplay muted></video>
-    <div id="status">Ready to Start</div>
-    <br><button onclick="initAI()">▶ START BRUSHING</button>
-    <script>
-        let classifier;
-        async function initAI() {
-            const statusDiv = document.getElementById('status');
-            statusDiv.innerText = "🧠 Loading AI...";
-            try {
-                classifier = new EdgeImpulseClassifier();
-                await classifier.init();
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-                document.getElementById('webcam').srcObject = stream;
-                statusDiv.innerText = "✅ AI Active!";
-                setInterval(async () => {
-                    const res = await classifier.classify(document.getElementById('webcam'));
-                    const top = res.results.reduce((a, b) => a.value > b.value ? a : b);
-                    statusDiv.innerText = `${top.label.toUpperCase()} (${Math.round(top.value*100)}%)`;
-                    statusDiv.className = top.label.toLowerCase().includes("brushing") ? "brushing" : "idle";
-                }, 200);
-            } catch (e) { alert("Camera Error: " + e.message); }
-        }
-    </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Dental Coach AI</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="edge-impulse-standalone.js"></script>
     <style>
         body { font-family: sans-serif; text-align: center; background: #121212; color: white; padding: 20px; }
         #webcam { width: 100%; max-width: 400px; border-radius: 15px; border: 4px solid #333; transform: scaleX(-1); }
         #status { margin-top: 20px; padding: 20px; border-radius: 15px; font-size: 24px; font-weight: bold; background: #222; }
         button { background: #007bff; color: white; border: none; padding: 15px 40px; border-radius: 50px; font-size: 18px; margin-top: 20px; font-weight: bold; }
-        .brushing { background: #28a745 !important; }
-        .idle { background: #dc3545 !important; }
     </style>
 </head>
 <body>
@@ -66,6 +22,7 @@
             const statusDiv = document.getElementById('status');
             statusDiv.innerText = "🧠 Loading AI...";
             try {
+                // This creates the classifier from your .js file
                 classifier = new EdgeImpulseClassifier();
                 await classifier.init();
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
@@ -75,51 +32,8 @@
                     const res = await classifier.classify(document.getElementById('webcam'));
                     const top = res.results.reduce((a, b) => a.value > b.value ? a : b);
                     statusDiv.innerText = `${top.label.toUpperCase()} (${Math.round(top.value*100)}%)`;
-                    statusDiv.className = top.label.toLowerCase().includes("brushing") ? "brushing" : "idle";
                 }, 200);
-            } catch (e) { alert("Camera Error: " + e.message); }
-        }
-    </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Dental Coach AI</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="edge-impulse-standalone.js"></script>
-    <style>
-        body { font-family: sans-serif; text-align: center; background: #121212; color: white; padding: 20px; }
-        #webcam { width: 100%; max-width: 400px; border-radius: 15px; border: 4px solid #333; transform: scaleX(-1); }
-        #status { margin-top: 20px; padding: 20px; border-radius: 15px; font-size: 24px; font-weight: bold; background: #222; }
-        button { background: #007bff; color: white; border: none; padding: 15px 40px; border-radius: 50px; font-size: 18px; margin-top: 20px; font-weight: bold; }
-        .brushing { background: #28a745 !important; }
-        .idle { background: #dc3545 !important; }
-    </style>
-</head>
-<body>
-    <h1>🦷 Dental Coach</h1>
-    <video id="webcam" playsinline autoplay muted></video>
-    <div id="status">Ready to Start</div>
-    <br><button onclick="initAI()">▶ START BRUSHING</button>
-    <script>
-        let classifier;
-        async function initAI() {
-            const statusDiv = document.getElementById('status');
-            statusDiv.innerText = "🧠 Loading AI...";
-            try {
-                classifier = new EdgeImpulseClassifier();
-                await classifier.init();
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-                document.getElementById('webcam').srcObject = stream;
-                statusDiv.innerText = "✅ AI Active!";
-                setInterval(async () => {
-                    const res = await classifier.classify(document.getElementById('webcam'));
-                    const top = res.results.reduce((a, b) => a.value > b.value ? a : b);
-                    statusDiv.innerText = `${top.label.toUpperCase()} (${Math.round(top.value*100)}%)`;
-                    statusDiv.className = top.label.toLowerCase().includes("brushing") ? "brushing" : "idle";
-                }, 200);
-            } catch (e) { alert("Camera Error: " + e.message); }
+            } catch (e) { alert("Error: " + e.message); }
         }
     </script>
 </body>
